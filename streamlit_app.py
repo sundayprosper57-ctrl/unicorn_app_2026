@@ -72,6 +72,10 @@ try:
 
     def trillions_format(value):
         return f"${value / 1_000_000_000_000:,.2f}T"
+    # empty filters handler
+    def show_empty_msg():
+        st.info("No matching filter. Adjust your selected filters")
+        
 
     # Global Overview
     st.header("1. Global Overview")
@@ -115,6 +119,8 @@ try:
              )
              continent_counts.columns = ["Continent","Companies"]
 
+             st.write(continent_counts)
+
              fig = px.bar(
              continent_counts,
              x= "Continent",
@@ -123,7 +129,31 @@ try:
              title= "Unicorns by Continent"
              )
              st.plotly_chart(fig, use_container_width=True)
+    else:
+        show_empty_msg()
 
+    ### This is another section
+    st.subheader("Geographical Distribution Map")
+    if not filtered_df.empty:
+        map_data = (
+            filtered_df.groupby("Country/Region").agg(
+                Companies=("Company","nunique"),
+                Total_Valuation=("Valuation","sum")
+            ).reset_index()   
+        )
+        fig = px.choropleth(
+            map_data,
+            locations="Country/Region",
+            locationmode="country names",
+            color="Companies",
+            hover_name="Country/Region",
+            hover_data=["Total_Valuation"],
+            title="Global unicorn Distribution",
+            
+        )
+        st.plotly_chart(fig, use_container_width=True)
+    else:
+        show_empty_msg()
           
         
 except ValueError as e:
